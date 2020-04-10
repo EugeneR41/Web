@@ -1,0 +1,163 @@
+body{
+background-image: url(https://wallpapercave.com/wp/GjrkLhP.jpg);	
+	background-color: indianred;
+	 
+	position: relative; 
+	z-index:1; 
+	} 
+p { 
+	margin-bottom: 0em; 
+	font-size: 16pt; 
+	} 
+h1 { 
+	font-family: Courier New,monospace;color: black; 
+	margin-left: 20px; 
+	} 
+h2 { 
+	font-family: Courier New,monospace; 
+	color: black; 
+	margin-left: 20px; 
+	} 
+hr {
+  border: 1px solid black;
+}
+.menu* { 
+	background-color: pink; 
+	margin: 0; 
+	padding: 0; 
+	text-align: center; 
+	} 
+.menu ul{ 
+	position: relative; 
+	z-index: 3; 
+	list-style: none; 
+	} 
+
+.menu > ul{ 
+	display: flex; 
+	} 
+
+.menu > ul li a{ 
+	font-family: Georgia,monospace; 
+	padding: 15px; 
+	display: block; 
+	background: #ba0606e1; 
+	font-size: 18px; 
+	color: black; 
+	text-decoration: none; 
+	} 
+
+.menu > ul li{ 
+	position: relative; 
+	border: 2px solid black; 
+	} 
+
+.menu li a:hover{ 
+	background: lightpink; 
+	color: #ba0606e1; 
+	box-shadow: 1px 5px 10px -5px #454547; 
+	} 
+
+.menu li ul{ 
+	position: absolute; 
+	margin: -1px; 
+	margin-top: 1px; 
+	min-width: 125.2px; 
+	display: none; 
+	} 
+
+.menu li > ul li{ 
+	border: 2px solid sandybrown; 
+	} 
+
+.menu li > ul li a{ 
+	padding: 15px; 
+	text-transform: none; 
+	background: #ba0606e1; 
+	} 
+
+.menu li:hover > ul{ 
+	display: block; 
+	} 
+
+.menu li > ul li ul{ 
+	width: 200px; 
+	position: absolute; 
+	top:-2px; 
+	right: -202px; 
+	} 
+
+@media print { 
+	.right,.left,.footer, img, nav{
+		 visibility: hidden 
+		
+		} 
+	}
+.footer {
+	color: white;
+	font-size: 200%;
+	text-align: right
+	
+}	 
+
+.center{ 
+
+	display: inline-block; 
+	background-color: #ba0606e1; 
+	border: 2px red; 
+	border-radius: 60px; 
+	margin: 1px; 
+	padding: 2%; 
+	width: 45%; 
+	height: 90%; 
+	min-height: 825px; 
+	max-width: 1000px; 
+	text-align: center; 
+	vertical-align: bottom; 
+	opacity: 0.9; 
+	}
+
+.right{ 
+	display: inline-block; 
+	background-color: maroon; 
+	border: 2px maroon; 
+	border-radius: 50px; 
+	margin: 1px; 
+	margin-right: 6%; 
+	padding: 2%; 
+	width: 15%; 
+	height: 90%; 
+	min-height: 825px; 
+	max-width: 1000px; 
+	text-align: center; 
+	vertical-align: bottom; 
+	opacity: 0.8; 
+	position: relative; 
+	z-index:2; 
+	} 
+.left{ 
+	display: inline-block; 
+	background-color: maroon; 
+	border: 2px maroon; 
+	border-radius: 50px; 
+	margin: 1px; 
+	margin-left: 6%; 
+	padding: 2%; 
+	width: 15%; 
+	height: 90%; 
+	min-height: 825px; 
+	max-width: 1000px; 
+	text-align: center; 
+	vertical-align: bottom; 
+	opacity: 0.8; 
+	position: relative; 
+	z-index:1; 
+	} 
+img { 
+	float: center; 
+	margin: 10px 30px 5px 5px; 
+	} 
+ul{ 
+	text-align: left; 
+	font-size: 16pt; 
+	}
