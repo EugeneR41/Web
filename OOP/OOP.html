@@ -1,0 +1,455 @@
+<html>
+<head>
+	<title>Canvas & Mootools</title>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mootools/1.6.0/mootools-core.js"></script>
+	<script type="text/javascript">
+		var canvas, ctx, balls,randomMovingbBalls, idTimer;
+		var arr = [];
+		const
+			minSize = 10,
+			maxSize = 40
+		const TShape = function (posX,posY){
+			this.posX = posX
+			this.posY = posY
+			this.radius = minSize + Math.random()*(maxSize-minSize)
+			this.pointDraw = function() {
+				ctx.beginPath()
+				this.absPoints.length = 0
+				this.absPoints.push({x:this.posX + this.points[0].x * this.radius, y:this.posY + this.points[0].y * this.radius})
+				ctx.moveTo(this.absPoints[0].x, this.absPoints[0].y)
+				let lines = []
+				lines.push(this.absPoints[0])
+				this.lines.length = 0
+				for (var i = 1; i < this.points.length; i++){
+					this.absPoints.push({x:this.posX + this.points[i].x * this.radius, y:this.posY + this.points[i].y * this.radius})
+					lines.push(this.absPoints[i])
+					if (lines.length >= 2) {
+						this.lines.push(lines.slice())
+						lines.splice(0, 1)
+					}
+					
+					ctx.lineTo(this.absPoints[i].x, this.absPoints[i].y)
+				}
+				if (lines.length % 2 === 1) {
+					this.lines.push([lines[0], this.absPoints[0]])
+				}
+				ctx.closePath()
+				ctx.fillStyle = this.col
+				ctx.fill()
+			}
+		}
+		const TBall = function(posX, posY){
+			TShape.apply(this, arguments)
+			this.col = 'rgb('+Math.floor(Math.random()*256)+','
+				+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+')'
+			this.startPointX = this.posX - this.radius
+			this.startPointY = this.posY - this.radius
+			this.Rheight = 2 * this.radius
+			this.Rwidth = 2 * this.radius
+			this.draw = function() {
+				ctx.fillStyle = this.col
+				ctx.beginPath()
+				ctx.arc(this.posX, this.posY, this.radius/2, 0, 2*Math.PI, false)
+				ctx.closePath()
+				ctx.fill()
+			}
+		}
+		const TTriangle = function(posX, posY) {
+			TShape.apply(this, arguments)
+			this.col = 'rgb('+Math.floor(Math.random()*256)+','
+				+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+')'
+			this.points = [{x:0, y:0.5}, {x:0.5, y:-0.5}, {x:-0.5, y:-0.5}]
+			this.absPoints = []
+			this.lines = []
+			this.draw = this.pointDraw
+			this.startPointX = this.posX
+				this.startPointY = this.posY
+				this.Rwidth = this.width
+				this.Rheight = this.height
+		}
+		const TSquare = function(posX, posY) {
+			this.col = 'rgb('+Math.floor(Math.random()*256)+','
+				+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*256)+')'
+			TShape.apply(this, arguments)
+			this.points = [{x:-0.5, y:0.5}, {x:0.5, y:0.5}, {x:0.5, y:-0.5}, {x:-0.5, y:-0.5}]
+			this.absPoints = []
+			this.lines = []
+			this.draw = this.pointDraw
+			this.Rwidth = this.width
+				this.Rheight = this.height
+				this.startPointX = this.posX
+				this.startPointY = this.posY
+		}
+		function drawBack(ctx,col1,col2,w,h){
+			// закрашиваем канвас градиентным фоном
+			ctx.save();
+			var g = ctx.createLinearGradient(0,0,0,h);
+			g.addColorStop(1,col1);
+			g.addColorStop(0,col2);
+			ctx.fillStyle = g;
+			ctx.fillRect(0,0,w,h);
+			ctx.restore();
+		}
+		// инициализация работы
+		function init(){
+			canvas = document.getElementById('canvas');
+			if (canvas.getContext){
+				ctx = canvas.getContext('2d');
+				//рисуем фон
+				drawBack(ctx,'white','black',canvas.width,canvas.height);
+				//создаем 10 шариков, заноси их в массив и выводим на canvas
+				figures = [];
+				for (var i = 1; i<=33;i++){
+					var item = new TBall(10+Math.random()*(canvas.width-30),
+					10+Math.random()*(canvas.height-30));
+					item.draw(ctx);
+					figures.push(item);
+				}
+				for (var i = 1; i<=33;i++){
+					var item = new TSquare(10+Math.random()*(canvas.width-30),
+					10+Math.random()*(canvas.height-30));
+					item.draw(ctx);
+					figures.push(item);
+				}
+				for (var i = 1; i<=33;i++){
+					var item = new TTriangle(10+Math.random()*(canvas.width-30),
+					10+Math.random()*(canvas.height-30));
+					item.draw(ctx);
+					figures.push(item);
+				}
+				
+				
+			}
+		}
+		// создаем новый шарик по щелчку мыши, добавляем его в массив шариков и рисуем его
+		function goInput(event){
+			var x = event.clientX
+			var y = event.clientY
+			var item
+			switch (Math.random()*3|0){
+				case 0:
+					item = new TBall(x,y)
+					break
+				case 1:
+					item = new TSquare(x,y)
+					break
+				case 2:
+					item = new TTriangle(x,y)
+					break
+			}
+			item.draw(ctx);
+			figures.push(item);
+		}
+		function peres(){
+					for (let i = 0; i < figures.length; i++) {
+				for (let j = i + 1; j < figures.length; j++) {
+					let a = figures[i], b = figures[j]
+					if (a.constructor.name == 'TBall' && b.constructor.name == 'TBall' ){
+						if(Math.pow(a.posX - b.posX, 2) + Math.pow(a.posY - b.posY, 2) < Math.pow(a.radius/2 + b.radius/2, 2)) {
+							figures.splice(figures.indexOf(a), 1)
+							figures.splice(figures.indexOf(b), 1)
+						}
+					}
+					else if (a.constructor.name != 'TBall' && b.constructor.name != 'TBall') {
+						let good = true
+						for (let i = 0; i < a.lines.length; i++) {
+							let l1 = a.lines[i]
+							for (let j = 0; j < b.lines.length; j++) {
+								let l2 = b.lines[j]
+								good = !SegmentSegment(l1[0].x, l1[0].y, l1[1].x, l1[1].y,  l2[0].x, l2[0].y, l2[1].x, l2[1].y)
+								if (!good) break
+								
+							}
+							if (!good) break
+						}
+						if (!good){
+							figures.splice(i,1);
+							figures.splice(figures.indexOf(b), 1)
+						}
+					}
+					else{
+						if (a.constructor.name == 'TBall' && b.constructor.name != 'TBall'){
+							a = figures[j], b = figures[i]
+						} // a - lines, b - ball
+						let good = true
+						for (let i = 0; i < a.lines.length; i++) {
+							if (SegmentCircle(a.lines[i][0].x, a.lines[i][0].y, a.lines[i][1].x, a.lines[i][1].y,  b.posX, b.posY,b.radius/2)) {
+								good = false
+								break
+							}
+						}
+						if (!good) {
+							figures.splice(figures.indexOf(a), 1)
+							figures.splice(figures.indexOf(b), 1)
+						}
+					}
+									
+				}
+			}
+		}	
+		function moveUp(){
+			drawBack(ctx,'white','black',canvas.width,canvas.height);
+			peres()
+			for (var i = 0; i < figures.length;i){
+				figures[i].posX = figures[i].posX + (Math.random()*4-2);
+				figures[i].posY = figures[i].posY + (Math.random()*2-4);
+				if ((figures[i].posY > canvas.height)||(figures[i].posX < 0) ||(figures[i].posY < 0)) 
+					figures.splice(i,1);
+				else{
+					increaseRad(figures[i]);
+					if ( figures[i].radius > 40){
+						figures.splice(i, 1);
+					}
+					else {
+						figures[i].draw(ctx);
+					}
+					i++;
+				} 
+			}
+		}
+			
+		function moveDown(){
+			drawBack(ctx,'white','black',canvas.width,canvas.height);
+			peres()
+			for (var i = 0; i < figures.length;i){
+				figures[i].posX = figures[i].posX - (Math.random()*4-2);
+				figures[i].posY = figures[i].posY - (Math.random()*2-4);
+				figures[i].draw(ctx);
+				if ((figures[i].posX < 0) ||(figures[i].posY < 0)) 
+					figures.splice(i,1);
+				else{
+					increaseRad(figures[i]);
+					if ( figures[i].radius > 40){
+						figures.splice(i, 1);
+					}
+					else {
+						figures[i].draw(ctx);
+					}
+					i++;
+				} 
+			}
+		}
+		
+		function moveRight(){
+			drawBack(ctx,'white','black',canvas.width,canvas.height);
+			peres()
+			for (var i = 0; i < figures.length;i){
+				figures[i].posX = figures[i].posX - (Math.random()*2-4);
+				figures[i].posY = figures[i].posY - (Math.random()*4-2);
+				figures[i].draw(ctx);
+				if ((figures[i].posX > canvas.width)||(figures[i].posX < 0) ||(figures[i].posY < 0)) 
+					figures.splice(i,1);
+				else{
+					increaseRad(figures[i]);
+					if ( figures[i].radius > 40){
+						figures.splice(i, 1);
+					}
+					else {
+						figures[i].draw(ctx);
+					}
+					i++;
+				} 
+			}
+		}
+		
+		function moveLeft(){
+			drawBack(ctx,'white','black',canvas.width,canvas.height);
+			peres()
+			for (var i = 0; i < figures.length;i){
+				figures[i].posX = figures[i].posX  + (Math.random()*2-4);
+				figures[i].posY = figures[i].posY + (Math.random()*4-2);
+				if ((figures[i].posX > canvas.width)||(figures[i].posX < 0) ||(figures[i].posY < 0)) 
+					figures.splice(i,1);
+				else{
+					increaseRad(figures[i]);
+					if ( figures[i].radius > 40){
+						figures.splice(i, 1);
+					}
+					else {
+						figures[i].draw(ctx);
+					}
+					i++;
+				} 
+					
+			}
+		}
+		
+		function moveHouse(){
+			drawBack(ctx,'white','black',canvas.width,canvas.height);
+			peres()
+			for (var i = 0; i < figures.length;i){
+				var way  = Math.floor(Math.random() * (5 - 1)) + 1;
+				if (way == 1){
+					figures[i].posX = figures[i].posX + (Math.random()*4-2);
+					figures[i].posY = figures[i].posY + (Math.random()*2-4);
+					figures[i].draw(ctx);
+					}
+				if (way == 2){
+					figures[i].posX = figures[i].posX - (Math.random()*4-2);
+					figures[i].posY = figures[i].posY - (Math.random()*2-4);
+					figures[i].draw(ctx);
+				} 
+				if (way == 3){
+					figures[i].posX = figures[i].posX - (Math.random()*2-4);
+					figures[i].posY = figures[i].posY - (Math.random()*4-2);
+					figures[i].draw(ctx);
+				} 
+				if (way == 4){
+					figures[i].posX = figures[i].posX  + (Math.random()*2-4);
+					figures[i].posY = figures[i].posY + (Math.random()*4-2);
+					figures[i].draw(ctx);
+				}
+				increaseRad(figures[i]);
+				if ( figures[i].radius > 40){
+					figures.splice(i, 1);
+				}
+				if ((figures[i].posX > canvas.width)||(figures[i].posX < 0) ||(figures[i].posY < 0)) 
+					figures.splice(i,1);
+				else 
+					i++;
+			}
+		}
+		
+		function moveRandom(){
+			drawBack(ctx,'white','black',canvas.width,canvas.height);
+			peres()
+			for (var i = 0; i < figures.length;i){
+				if (arr[i] == 1){
+					figures[i].posX = figures[i].posX + (Math.random()*4-2);
+					figures[i].posY = figures[i].posY + (Math.random()*2-4);
+					figures[i].draw(ctx);
+					}
+				if (arr[i]== 2){
+					figures[i].posX = figures[i].posX - (Math.random()*4-2);
+					figures[i].posY = figures[i].posY - (Math.random()*2-4);
+					figures[i].draw(ctx);
+				} 
+				if (arr[i] == 3){
+					figures[i].posX = figures[i].posX - (Math.random()*2-4);
+					figures[i].posY = figures[i].posY - (Math.random()*4-2);
+					figures[i].draw(ctx);
+				} 
+				if (arr[i] == 4){
+					figures[i].posX = figures[i].posX  + (Math.random()*2-4);
+					figures[i].posY = figures[i].posY + (Math.random()*4-2);
+					figures[i].draw(ctx);
+				}
+				
+				increaseRad(figures[i]);
+				
+				if ( figures[i].radius > 40){
+					figures.splice(i, 1);
+				}
+				
+				if ((figures[i].posX < 0) || (figures[i].posX > canvas.height) || (figures[i].posY > canvas.width) || (figures[i].posY < 0)){ 
+					figures.splice(i,1);
+				
+				}
+				else 
+					i++;
+			}
+		}
+		function Up(){
+			clearInterval(idTimer);
+			idTimer = setInterval('moveUp();',50);
+		}
+		function Down(){
+			clearInterval(idTimer);
+			idTimer = setInterval('moveDown();',50);
+		}
+		function Right(){
+			clearInterval(idTimer);
+			idTimer = setInterval('moveRight();',50);
+		}
+		function Left(){
+			clearInterval(idTimer);
+			idTimer = setInterval('moveLeft();',50);
+		}
+		function Dr_House(){
+			clearInterval(idTimer);
+			idTimer = setInterval('moveHouse();',50);
+		}
+		function Random(){
+		for (var i = 0; i < figures.length;i++){
+			arr[i] = Math.floor(Math.random() * (5 - 1)) + 1;
+		}
+		clearInterval(idTimer);
+		idTimer = setInterval('moveRandom();',45);
+		}
+		
+		function increaseRad(a){
+			a.radius = a.radius + 0.3;
+		}
+			function SegmentSegment(x11, y11, x12, y12,  x21, y21, x22, y22)
+		{
+			let maxx1 = Math.max(x11, x12), maxy1 = Math.max(y11, y12)
+			let minx1 = Math.min(x11, x12), miny1 = Math.min(y11, y12)
+			let maxx2 = Math.max(x21, x22), maxy2 = Math.max(y21, y22)
+			let minx2 = Math.min(x21, x22), miny2 = Math.min(y21, y22)
+			if (minx1 > maxx2 || maxx1 < minx2 || miny1 > maxy2 || maxy1 < miny2)
+			  return false  // Момент, када линии имеют одну общую вершину...
+			 
+			let dx1 = x12-x11, dy1 = y12-y11 // Длина проекций первой линии на ось x и y
+			let dx2 = x22-x21, dy2 = y22-y21 // Длина проекций второй линии на ось x и y
+			let dxx = x11-x21, dyy = y11-y21
+			let mul
+			let div = dy2 * dx1 - dx2 * dy1
+			if (div === 0)
+				return false // Линии параллельны...
+			if (div > 0) {
+				mul = dx1*dyy-dy1*dxx
+				if (mul < 0 || mul > div)
+					return false // Первый отрезок пересекается за своими границами...
+				mul = dx2*dyy-dy2*dxx
+				if (mul < 0 || mul > div)
+					return false // Второй отрезок пересекается за своими границами...
+			}
+			mul = -(dx1*dyy-dy1*dxx)
+			if (mul < 0 || mul > -div)
+				return false // Первый отрезок пересекается за своими границами...
+			mul = -(dx2*dyy-dy2*dxx)
+			if (mul < 0 || mul > -div)
+				return false // Второй отрезок пересекается за своими границами...
+			return true
+		}
+			function SegmentCircle(x1, y1, x2, y2,  xC, yC, R){   
+			x1 -= xC
+			y1 -= yC
+			x2 -= xC
+			y2 -= yC
+			 
+			let dx = x2 - x1
+			let dy = y2 - y1
+			
+			//составляем коэффициенты квадратного уравнения на пересечение прямой и окружности.
+			//если на отрезке [0..1] есть отрицательные значения, значит отрезок пересекает окружность
+			let a = dx * dx + dy * dy
+			let b = 2 * (x1 * dx + y1 * dy)
+			let c = x1 * x1 + y1 * y1 - R * R
+			
+			//а теперь проверяем, есть ли на отрезке [0..1] решения
+			if (-b < 0) 
+				return (c < 0)
+			if (-b < (2.*a))
+				return ((4.*a*c - b*b) < 0)
+			return (a+b+c < 0)
+		}
+	</script>
+	<style type="text/css">
+		canvas { border: 1px solid blue; }
+	</style>
+</head>
+<body onload="init();">
+	<canvas id="canvas" width="600" height="400" onclick="goInput(event);">
+	</canvas>
+	<form>
+		<input type = "button" value = "Вверх" onclick="Up()">
+		<input type = "button" value = "Вниз" onclick="Down()">
+		<input type = "button" value = "Вправо" onclick="Right()">
+		<input type = "button" value = "Влево" onclick="Left()">
+		<input type = "button" value = "Рандомное" onclick="Random()">
+		<input type = "button" value = "Хаос" onclick="Dr_House()">
+		<input type = "button" value = "Стоп" onclick="clearInterval(idTimer);">
+	</form>
+</body>
+</html>
