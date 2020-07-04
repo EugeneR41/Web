@@ -1,0 +1,51 @@
+body {
+    background-image: url(bgg.png);
+}
+
+#wrapper {
+    position: absolute;
+    top: -25px;
+    border-radius: 20px;
+    opacity: 0.95;
+}
+.score {
+  font-size: 100px;
+  line-height: 1.42857143;
+  color: #fff;
+  margin-top: 300px;
+}
+
+.img {
+  display: block;
+  height: auto;
+  max-width: 100%;
+}
+
+.pics {
+	margin-top: 50px;
+}
+
+.main {
+    position: relative;
+    margin-left: 25px;
+    margin-top: 50px;
+    width: 900px;
+    height: 600px;
+}
+
+
+.btns {
+    position: relative;
+    margin-left: 120px;
+    margin-top: 0px;
+    margin-right: 0;
+    width: 900px;
+    height: 70px;
+    padding: 0;
+}
+
+.btn {
+    width: calc(25% - 3px);
+    padding-left: 0;
+    padding-right: 0;
+}
